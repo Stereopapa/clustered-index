@@ -1,0 +1,6 @@
+insert 1 10.0 10.5
+insert 2 20.0 20.5
+insert 3 30.0 30.5
+insert 4 40.0 40.5
+insert 5 50.0 50.5
+delete 3

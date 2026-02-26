@@ -5,3 +5,6 @@ __pycache__
 /table
 /experiment/table
 /docs/experiment
+/tests/table
+/tests/experiment
+/tests/docs

@@ -6,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Tuple, List, ClassVar, Literal
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import pandas as pd
 
 
@@ -54,9 +55,13 @@ class TreeExperimentRunner:
 
     #config
     print_info: bool
+    show_chart_and_table: bool
+    save_chart_and_table: bool
     use_real_height: bool
     TEMP_PATH_STR: ClassVar[str] = "experiment/table/temp"
     MAIN_PATH_STR: ClassVar[str] = "experiment/table/main"
+    RESULT_CHART_PATH_STR: ClassVar[str] = "docs/experiment/charts"
+    RESULT_TABLE_PATH_STR: ClassVar[str] = "docs/experiment/tables"
 
     _operations_delta: int
     _data: List[
@@ -86,6 +91,8 @@ class TreeExperimentRunner:
 
         self.print_info = True
         self.use_real_height = True
+        self.save_chart_and_table = False
+        self.show_chart_and_table = True
         self.type = "None"
 
     def run_experiment_degrees(self, exp: ExperimentDegrees):
@@ -105,6 +112,8 @@ class TreeExperimentRunner:
             self.run_iteration(N)
             self._results.append(copy.deepcopy(self._result))
             i += 1
+        self.print_chart(exp.TYPE_NAME + "_" + exp.name)
+        self.print_table(exp.TYPE_NAME + "_" + exp.name)
 
 
     def run_experiment_records(self, exp: ExperimentRecords):
@@ -125,7 +134,8 @@ class TreeExperimentRunner:
             self.run_iteration(N)
             self._results.append(copy.deepcopy(self._result))
             i += 1
-        return None
+        self.print_chart(exp.TYPE_NAME + "_" + exp.name)
+        self.print_table(exp.TYPE_NAME + "_" + exp.name)
 
 
     def _generate_keys_from_scope(self, static_keys_amount: int):
@@ -268,7 +278,7 @@ class TreeExperimentRunner:
         self._result.update.theo_bc_o = 1
         self._result.update.theo_bc_i = min_height
 
-    def print_chart(self):
+    def print_chart(self, filename: str):
         if not self._data or not self._results:
             raise RuntimeError("No experiment data to display")
 
@@ -290,7 +300,7 @@ class TreeExperimentRunner:
             ("Update", "update"),
         ]
 
-        fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+        fig, axes = plt.subplots(2, 3, figsize=(18, 10), layout="constrained")
         axes = axes.flatten()
 
         line_cfg = [
@@ -334,10 +344,17 @@ class TreeExperimentRunner:
         # ---- Hide unused subplot (index 5) ----
         axes[5].axis("off")
 
-        plt.tight_layout()
-        plt.show()
+        self._save_show_close_results(fig, self.RESULT_CHART_PATH_STR, filename)
 
-    def print_table(self):
+    def _save_show_close_results(self, fig: Figure, path_str: str, filename: str):
+        if self.save_chart_and_table:
+            path = Path(path_str)
+            path.mkdir(parents=True, exist_ok=True)
+            fig.savefig(path/filename)
+        if self.show_chart_and_table: plt.show()
+        plt.close(fig)
+
+    def print_table(self, filename: str):
         if not self._data or not self._results:
             raise RuntimeError("No experiment data to display")
 
@@ -388,7 +405,8 @@ class TreeExperimentRunner:
 
         # ---- Plot ----
         fig, ax = plt.subplots(
-            figsize=(len(col_labels) * 0.55, len(row_labels) * 0.6)
+            figsize=(len(col_labels) * 0.55, len(row_labels) * 0.6),
+            layout="constrained"
         )
         ax.axis("off")
 
@@ -406,5 +424,6 @@ class TreeExperimentRunner:
 
         ax.set_title("B+Tree Experiment Results", fontsize=14, pad=20)
 
-        plt.tight_layout()
-        plt.show()
+        self._save_show_close_results(fig, self.RESULT_TABLE_PATH_STR, filename)
+
+

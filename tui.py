@@ -225,8 +225,8 @@ class Tui:
 
     def _read_experiment_degrees_data(self) -> ExperimentDegrees | None:
         enter_mes = (
-            "Type paremeters in format (operation_amount reocrds_amount, d1 r1, d2 r2, d3 r4, ....) or type return\n"
-            "Example input: 100 1000, 2 2, 4 4\n"
+            "Type paremeters in format (name operation_amount reocrds_amount, d1 r1, d2 r2, d3 r4, ....) or type return\n"
+            "Example input: exp1 100 1000, 2 2, 4 4\n"
         )
         adapter = TypeAdapter(ExperimentDegrees)
 
@@ -253,12 +253,11 @@ class Tui:
         self.clear_console()
         return None
 
-
     def _read_experiment_records_data(self) -> ExperimentRecords | None:
 
         enter_mes = (
-            "Type parameters in format (operation_amount d r, N, N, N, ....) N is records amount or type return\n"
-            "Example input: 1000 4 4, 2000, 4000, 8000\n"
+            "Type parameters in format (name operation_amount d r, N, N, N, ....) N is records amount or type return\n"
+            "Example input: exp1 1000 4 4, 2000, 4000, 8000\n"
         )
         adapter = TypeAdapter(ExperimentRecords)
         while True:
@@ -287,7 +286,8 @@ class Tui:
     def _experiment_settings_menu(self):
         enter_mess = (
             "Type value as command\n"
-            "1 Switch Experiment Print Phases, 2 Switch Use Real Tree Height, 9 return\n"
+            "1 Switch Print Phases, 2 Switch Use Real Tree Height, \n"
+            "3 Switch Plot Results, 4 Switch Save Results  9 return\n"
         )
         self.clear_console()
         while (cmd:=input(enter_mess)) != "9":
@@ -299,6 +299,12 @@ class Tui:
                 case "2":
                     self.experiment_runner.use_real_height = not self.experiment_runner.use_real_height
                     print(f"Use Real tree height changed to {self.experiment_runner.use_real_height}")
+                case "3":
+                    self.experiment_runner.show_chart_and_table = not self.experiment_runner.show_chart_and_table
+                    print(f"Plot Results changed to {self.experiment_runner.show_chart_and_table}")
+                case "4":
+                    self.experiment_runner.save_chart_and_table = not self.experiment_runner.save_chart_and_table
+                    print(f"Save Results changed to {self.experiment_runner.save_chart_and_table}")
                 case _:
                     print(f"{self._bad_command_format_mess}")
         self.clear_console()
@@ -309,38 +315,28 @@ class Tui:
             "1 Default Degrees, 2 Default Records, 3 Degrees Reverse\n"
             "4 Custom Degrees, 5 Custom Records, 6 Settings, 9 return\n"
         )
-        experiment_run: bool  = False
         self.clear_console()
         while (op := input(enter_mess)) != "9":
             self.clear_console()
             match op:
                 case "1":
                     self.experiment_runner.run_experiment_degrees(ExperimentDegrees.DEFAULT)
-                    experiment_run = True
                 case "2":
                     self.experiment_runner.run_experiment_records(ExperimentRecords.DEFAULT)
-                    experiment_run = True
                 case "3":
                     self.experiment_runner.run_experiment_degrees(ExperimentDegrees.REVERSE_DEFAULT)
-                    experiment_run = True
                 case "4":
                     exp = self._read_experiment_degrees_data()
                     if exp is not None:
                         self.experiment_runner.run_experiment_degrees(exp)
-                        experiment_run = True
                 case "5":
                     exp = self._read_experiment_records_data()
                     if exp is not None:
                         self.experiment_runner.run_experiment_records(exp)
-                        experiment_run = True
                 case "6":
                     self._experiment_settings_menu()
                 case _:
                     print(self._bad_command_format_mess)
-            if experiment_run:
-                experiment_run = False
-                self.experiment_runner.print_chart()
-                self.experiment_runner.print_table()
         self.clear_console()
 
 

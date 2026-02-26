@@ -5,11 +5,12 @@ from core.structures.file_header import FileHeader
 from core.structures.record import Record
 from experiment.metrics import Metrics
 
+conf = BplusTreeConfig(
+    r=2, d=2,
+    auto_page_size=True, auto_degrees=False, override_file=True, filepath="./tests/table/main_file")
 
 def test_alloc_node():
-    conf = BplusTreeConfig(
-        r=2, d=2,
-        auto_page_size=True, auto_degrees=False, override_file=True)
+    conf.override_file = True
     loader = PageManager(conf)
     conf.override_file = False
 
@@ -66,9 +67,7 @@ def test_alloc_node():
     assert (root == root_test)
 
 def test_alloc_Leaf():
-    conf = BplusTreeConfig(
-        r=2, d=2,
-        auto_page_size=True, auto_degrees=False, override_file=True)
+    conf.override_file = True
     loader = PageManager(conf)
     conf.override_file = False
 
@@ -145,9 +144,7 @@ def test_metrics_compatibility():
     assert metrics.page_count == loader._page_count == 3
 
 def test_file():
-    conf = BplusTreeConfig(
-        r=2, d=2,
-        auto_page_size=True, auto_degrees=False, override_file=True)
+    conf.override_file = True
     loader = PageManager(conf)
 
     loader.buff_flush()
@@ -158,9 +155,7 @@ def test_file():
     assert loader._file_header == FileHeader(conf.page_size, magic=conf.magic)
 
 def test_page_allocation():
-    conf = BplusTreeConfig(
-        r=2, d=2,
-        auto_page_size=True, auto_degrees=False, override_file=True)
+    conf.override_file = True
     loader = PageManager(conf)
 
     conf.override_file = False

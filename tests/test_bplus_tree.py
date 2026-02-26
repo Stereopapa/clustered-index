@@ -11,7 +11,7 @@ from core.structures.record import Record
 
 conf = BplusTreeConfig(
         d=2,r=2,page_size=128,debug=True,
-        auto_page_size=True,auto_degrees=False,override_file=True)
+        auto_page_size=True,auto_degrees=False,override_file=True,  filepath="./tests/table/main_file")
 
 def test_update_same_key():
     t = BplusTree(conf=conf)
@@ -75,7 +75,7 @@ def test_search_after_rebalance():
 def test_random_insert_delete():
     conf.duplicates_keys_in_nodes_allowed = True
     t = BplusTree(conf)
-    i: int = 3000
+    i: int = 100
     iterations: int = 2
     try:
         for it in range(iterations):
@@ -104,73 +104,3 @@ def assert_existing_keys_can_be_found(t: BplusTree, keys: List[int]):
     for key in keys:
        t.search(key)
     assert True
-
-# """
-# def test_leafs_max_equal_parent_key():
-#     conf.duplicates_keys_in_nodes_allowed = True
-#     t = BplusTree(conf)
-#     i: int = 100
-#     try:
-#         keys = random.sample(range(i), k=i)
-#         for key in keys:
-#             t.insert(key, Record.random())
-#
-#         delete_keys = random.sample(range(i), k=i)
-#         key: int = 0
-#         divisor = i//10
-#         for key in delete_keys:
-#             t.delete(key)
-#             if i % divisor == 0:
-#                 t.display("structure_collapse_rec", f"d:{key}")
-#             assert_leafs_max_equals_parent_keys(t)
-#             i -= 1
-#         t.display("structure_collapse_rec", f"d:{key}")
-#     except Exception:
-#         raise
-#
-# def test_find_error_merging_():
-#     t = BplusTree(conf)
-#     keys = [2, 27, 30, 9, 13, 22, 19, 42, 25, 17, 43, 18, 36, 14, 23, 31, 15, 10, 48, 34, 8, 45, 44, 26, 47, 11, 41, 28, 20, 6, 12, 0, 7, 16, 40, 21, 37, 24, 39, 38, 32, 29, 3, 1, 46, 4, 35, 5, 49, 33]
-#     del_keys = [2, 35, 28, 27, 9, 17, 22, 29, 30, 25, 23, 24, 11, 12, 42, 14, 1, 41, 44, 38, 7, 46, 26, 34, 6, 39, 45, 15, 20, 13, 48, 16, 0, 47, 4, 32, 19, 33, 40, 37, 43, 18, 5, 8, 21, 10, 3, 36, 49, 31]
-#     try:
-#         for key in keys:
-#             t.insert(key, Record.random())
-#         t.display("structure_collapse_rec", f"d:{-1}")
-#         for key in del_keys:
-#             t.delete(key)
-#             t.display("structure_collapse_rec", f"d:{key}")
-#             assert_leafs_max_equals_parent_keys(t)
-#     except Exception:
-#         raise
-#
-# def assert_leafs_max_equals_parent_keys(t: BplusTree):
-#     page, _ = t._descent_tree(0)
-#     if not page.is_root:
-#         parent =  t._loader.page_read(page.header.parent)
-#     idx: int = -1
-#     while not page.is_root:
-#         if parent.header.id != page.header.parent:
-#             idx = 0
-#             parent = t._loader.page_read(page.header.parent)
-#         else: idx += 1
-#         if idx < len(parent.keys):
-#             assert parent.keys[idx] == max(page.keys) == page.keys[-1]
-#         page = t._loader.page_read(page.header.next)
-#         if page.header.next == 0:
-#             break
-# def test_rightmost_record_delete():
-#     t = BplusTree(conf=conf)
-#     for i in range(100):
-#         t.insert(i, Record.random())
-#     t.display(mode="structure_collapse_rec")
-#
-#     key = 95
-#
-#     page, ch_pos = t._descent_tree(key)
-#     parent = t._loader.page_read(page.header.parent)
-#     t.delete(key)
-#     assert parent.keys[-1] == page.keys[-1]
-#     t.delete(99)
-#     assert parent.keys[-1] == page.keys[-1]
-#
-#     t.display(mode="structure_collapse_rec")

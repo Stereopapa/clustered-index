@@ -27,6 +27,7 @@ def test_auto_degrees():
     conf = BplusTreeConfig(
         d=2, r=2, page_size=128,
         auto_page_size=False, auto_degrees=True)
+    conf.auto_degrees = True
     # head size = 21, leaf_size = 12, node_size = 8, 128-21=43, r=107//12)//2=4, d=107//8)//2=6
     assert conf.r == 4 and conf.d == 6
     with pytest.raises(ValueError):

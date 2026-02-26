@@ -11,7 +11,7 @@ from core.structures.record import Record
 
 conf = BplusTreeConfig(
         d=2,r=2,page_size=128,debug=True,
-        auto_page_size=True,auto_degrees=False,override_file=True)
+        auto_page_size=True,auto_degrees=False,override_file=True, filepath="./tests/table/main_file")
 
 def test_update_bigger_tree():
     t = BplusTree(conf=conf)

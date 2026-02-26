@@ -55,8 +55,8 @@ class TreeExperimentRunner:
     #config
     print_info: bool
     use_real_height: bool
-    TEMP_PATH_STR: ClassVar[str] = "experiment/data/temp"
-    MAIN_PATH_STR: ClassVar[str] = "experiment/data/main"
+    TEMP_PATH_STR: ClassVar[str] = "experiment/table/temp"
+    MAIN_PATH_STR: ClassVar[str] = "experiment/table/main"
 
     _operations_delta: int
     _data: List[

@@ -40,7 +40,7 @@ class BplusTreeConfig:
 
     page_size: int = 4096
     debug: bool = False
-    filepath: str = "data/main_file"
+    filepath: str = "table/main_file"
     override_file: bool = False
 
     auto_degrees: bool = True
@@ -122,7 +122,7 @@ class BplusTreeConfig:
         h_size = PageHeader.BYTES_SIZE
         available = self.page_size - h_size
 
-        tup_size_r = struct.calcsize(Page.LEAF_FMT) + Record.BYTES_SIZE
+        tup_size_r = struct.calcsize(Page.LEAF_FMT)
         tup_size_d = struct.calcsize(Page.NODE_FMT)
 
         max_keys_r = available // tup_size_r

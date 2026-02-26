@@ -2,7 +2,6 @@ from typing import List
 from random import Random
 
 
-
 def pow_range(*args, factor: int = 2):
     start: int = 0
     end: int = 0

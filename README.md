@@ -115,7 +115,7 @@ Example fields:
 
 
 ```
-    core/structures/file_header.py
+core/structures/file_header.py
 ```
 
 ## Page Structure
@@ -133,7 +133,7 @@ Each page contains:
 
 Data entries stored in leaf pages.
 ```
-    core/structures/record.py
+core/structures/record.py
 ```
 
 ------------------------------------------------------------------------
@@ -161,7 +161,7 @@ This allows performance experiments similar to real database systems.
 The project contains an **experiment framework** for measuring B+ Tree
 performance.
 ```
-    experiment/
+ experiment/
 ```
 Experiments collect metrics such as:
 
@@ -245,16 +245,16 @@ pip install -r requirements.txt
 
 ## Run the application
 ```
-    python main.py
+python main.py
 ```
 ------------------------------------------------------------------------
 
 # Running Experiments
 
 Experiments can be run through the experiment runner.
-
-    experiment/tree_experiment_runner.py
-
+```
+experiment/tree_experiment_runner.py
+```
 They generate data about I/O operations and tree behavior.
 
 Example metrics:
@@ -272,7 +272,7 @@ The project includes a comprehensive test suite.
 
 Run tests using:
 ```
-    pytest
+pytest
 ```
 Test categories include:
 
@@ -289,8 +289,8 @@ Test categories include:
 A detailed report describing the implementation and experiments is
 included:
 ```
-    docs/report_en.pdf
-    docs/report_pl.pdf
+docs/report_en.pdf
+docs/report_pl.pdf
 ```
 The report explains:
 

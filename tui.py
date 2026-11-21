@@ -6,16 +6,20 @@ from experiment.experiment_data import ExperimentDegrees, ExperimentRecords
 from experiment.tree_experiment_runner import TreeExperimentRunner
 from typing import List, IO
 from core.bplus_tree import BplusTree
+from core.tree_printer import TreePrinter
 from core.structures.record import Record
+from commands import SearchCommand, InsertCommand, DeleteCommand, UpdateCommand
 
 
 class Tui:
     #TODO: Context Manager to easier inner menus handling ()
     #TODO: Predefined Presentation files
     _bad_command_format_mess: str = "bad command format: pick command from suggestion bellow"
+    _commands = {"read": SearchCommand, "insert": InsertCommand, "delete": DeleteCommand, "update": UpdateCommand}
 
     def __init__(self, t: BplusTree, exp_runner: TreeExperimentRunner):
         self.tree = t
+        self.printer = TreePrinter(t)
         self.experiment_runner = exp_runner
         self.collapse_records = True
 
@@ -42,34 +46,6 @@ class Tui:
     def clear_console(self):
         print("\n" * 40)
 
-    def _validate_mass(self, mS: str) -> float:
-        m =  float(mS)
-        if m < 0.0:
-            raise ValueError("Value Error: Mass should be positive number")
-        return m
-
-    def _validate_velocity(self, vS: str) -> float:
-        v = float(vS)
-        if v < 0.0:
-            raise ValueError("Mass is positive number")
-        return v
-
-    def _validate_key(self, kS: str) -> int:
-        k = int(kS)
-        if k < 0.0:
-           raise ValueError("Mass is positive number")
-        return k
-
-
-    def _validate_record(self, line: List) -> Record:
-        if len(line) != Record.ARG_COUNT:
-            raise ValueError("There should be only 2 arguments, Try again")
-        m = self._validate_mass(line[0])
-        v = self._validate_velocity(line[1])
-
-        return Record(mass=m, velocity=v)
-
-
     def _read_keyboard_insert(self):
         mess = "Type data to be inserted (key mass velocity) e.g: 8 3.1 1.2\n"
         inp = input(mess)
@@ -77,11 +53,7 @@ class Tui:
 
         if len(lines) != Record.ARG_COUNT + 1:
             raise ValueError(f"To much arguments, insert have {Record.ARG_COUNT + 1}")
-        key = self._validate_key(lines[0])
-        rec = self._validate_record(lines[1:])
-
-        self.tree.insert(key, rec)
-        print(f"Inserted {rec} with key {key}")
+        print(InsertCommand(self.tree, lines).execute())
 
 
     def _read_keyboard_search(self):
@@ -89,10 +61,7 @@ class Tui:
         inp = input(mess)
         lines = inp.strip().split()
 
-        key = self._validate_key(lines[0])
-
-        rec = self.tree.search(key)
-        print(f"Record with key {key} found {rec}")
+        print(SearchCommand(self.tree, lines).execute())
 
 
     def _read_keyboard_update(self):
@@ -103,25 +72,15 @@ class Tui:
 
         if len(lines) != Record.ARG_COUNT + 2:
             raise ValueError(f"To much arguments, insert have {Record.ARG_COUNT + 1}")
-        key = self._validate_key(lines[0])
-        new_key = self._validate_key(lines[1])
-        rec = self._validate_record(lines[2:])
-
-        self.tree.update(key, new_key, rec)
-        print(f"Updated {rec} with key {new_key}")
+        print(UpdateCommand(self.tree, lines).execute())
 
 
     def _read_keyboard_delete(self):
         mess = "Type key to be deleted as whole number\n"
-        key: int
-
         inp = input(mess)
         lines = inp.strip().split()
 
-        key = self._validate_key(lines[0])
-
-        rec = self.tree.delete(key)
-        print(f"Deleted {rec} with {key} Deleted")
+        print(DeleteCommand(self.tree, lines).execute())
 
 
 
@@ -130,8 +89,8 @@ class Tui:
             "Type number as command from list below\n"
             "1 Read , 2 Insert, 3 Delete, 4 update, 9 return\n"
         )
-        if self.collapse_records: self.tree.display("structure_collapse_rec")
-        else: self.tree.display("structure")
+        if self.collapse_records: self.printer.display("structure_collapse_rec")
+        else: self.printer.display("structure")
         while (op :=  input(enter_mess)) != "9":
             self.clear_console()
             try:
@@ -145,8 +104,8 @@ class Tui:
                 self.clear_console()
                 print(f"Bad Operation, {e}")
             finally:
-                if self.collapse_records: self.tree.display("structure_collapse_rec")
-                else: self.tree.display("structure")
+                if self.collapse_records: self.printer.display("structure_collapse_rec")
+                else: self.printer.display("structure")
         self.clear_console()
 
 
@@ -170,28 +129,8 @@ class Tui:
 
 
     def _process_op(self, op: str, args: List):
-        match op:
-            case "read":
-                key = self._validate_key(args[0])
-                self.tree.search(key)
-
-            case "delete":
-                key = self._validate_key(args[0])
-                self.tree.delete(key)
-
-            case "insert":
-                key = self._validate_key(args[0])
-                rec = self._validate_record(args[1:])
-                self.tree.insert(key, rec)
-
-            case "update":
-                key = self._validate_key(args[0])
-                new_key = self._validate_key(args[1])
-                rec = self._validate_record(args[2:])
-                self.tree.update(key, new_key, rec)
-
-        # if self.collapse_records: self.tree.display("structure_collapse_rec")
-        # else:self.tree.display("structure")
+        if op in self._commands:
+            self._commands[op](self.tree, args).execute()
 
 
     def process_ops_file(self, f: IO) -> None:
@@ -215,10 +154,10 @@ class Tui:
         while (op := input(enter_mess)) != "9":
             self.clear_console()
             match op:
-                case "1": self.tree.display("structure");
-                case "2": self.tree.display("leafs");
-                case "3": self.tree.display("sequential");
-                case "4": self.tree.display("structure_collapse_rec");
+                case "1": self.printer.display("structure");
+                case "2": self.printer.display("leafs");
+                case "3": self.printer.display("sequential");
+                case "4": self.printer.display("structure_collapse_rec");
                 case _: print(self._bad_command_format_mess)
         self.clear_console()
 
@@ -320,19 +259,19 @@ class Tui:
             self.clear_console()
             match op:
                 case "1":
-                    self.experiment_runner.run_experiment_degrees(ExperimentDegrees.DEFAULT)
+                    self.experiment_runner.run_experiment(ExperimentDegrees.DEFAULT)
                 case "2":
-                    self.experiment_runner.run_experiment_records(ExperimentRecords.DEFAULT)
+                    self.experiment_runner.run_experiment(ExperimentRecords.DEFAULT)
                 case "3":
-                    self.experiment_runner.run_experiment_degrees(ExperimentDegrees.REVERSE_DEFAULT)
+                    self.experiment_runner.run_experiment(ExperimentDegrees.REVERSE_DEFAULT)
                 case "4":
                     exp = self._read_experiment_degrees_data()
                     if exp is not None:
-                        self.experiment_runner.run_experiment_degrees(exp)
+                        self.experiment_runner.run_experiment(exp)
                 case "5":
                     exp = self._read_experiment_records_data()
                     if exp is not None:
-                        self.experiment_runner.run_experiment_records(exp)
+                        self.experiment_runner.run_experiment(exp)
                 case "6":
                     self._experiment_settings_menu()
                 case _:

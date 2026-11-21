@@ -14,7 +14,7 @@ from core.bplus_tree import BplusTree
 from core.config import BplusTreeConfig
 from core.structures.record import Record
 from experiment.metrics import Metrics
-from experiment.experiment_data import ExperimentDegrees, ExperimentRecords
+from experiment.experiment_data import Experiment, ExperimentDegrees, ExperimentRecords
 
 @dataclass()
 class ExperimentOperationResult:
@@ -76,10 +76,9 @@ class TreeExperimentRunner:
     _operation_keys: List[int]
 
 
-    def __init__(self):
-        self._metrics = Metrics()
-        conf = BplusTreeConfig(filepath=self.MAIN_PATH_STR, override_file=True)
-        self._tree = BplusTree(conf)
+    def __init__(self, tree: BplusTree, metrics: Metrics):
+        self._metrics = metrics
+        self._tree = tree
         self._tree.set_metrics(self._metrics)
 
         self._results = []
@@ -95,42 +94,19 @@ class TreeExperimentRunner:
         self.show_chart_and_table = True
         self.type = "None"
 
-    def run_experiment_degrees(self, exp: ExperimentDegrees):
+    def run_experiment(self, exp: Experiment):
         self._data = exp.data
         self._operations_delta = exp.operation_amount
         self._results = []
-        N = exp.rec_amount
 
         if self.print_info: print(f"Experiment Started, Operations amount: {self._operations_delta}")
         i: int = 1
-        for d, r in self._data:
+        for d, r, N in exp.iterations():
             if self.print_info: print(f"Iteration {i}, Records: {N}, d: {d}, r: {r}")
             conf = BplusTreeConfig(d=d, r=r, auto_page_size=True, auto_degrees=False
                                    ,filepath=self.MAIN_PATH_STR)
             self._tree.set_conf_by_instance(conf)
 
-            self.run_iteration(N)
-            self._results.append(copy.deepcopy(self._result))
-            i += 1
-        self.print_chart(exp.TYPE_NAME + "_" + exp.name)
-        self.print_table(exp.TYPE_NAME + "_" + exp.name)
-
-
-    def run_experiment_records(self, exp: ExperimentRecords):
-
-        self._data = exp.data
-        self._operations_delta = exp.operation_amount
-        self._results = []
-        d, r = exp.node_degree, exp.leaf_degree
-
-        conf = BplusTreeConfig(d=d, r=r, auto_page_size=True,
-                               auto_degrees=False, filepath=self.MAIN_PATH_STR)
-        self._tree.set_conf_by_instance(conf)
-
-        if self.print_info: print(f"Experiment Started, Operations amount: {self._operations_delta}")
-        i: int = 1
-        for N in self._data:
-            if self.print_info: print(f"Iteration {i}, Records: {N}, d: {d}, r: {r}")
             self.run_iteration(N)
             self._results.append(copy.deepcopy(self._result))
             i += 1

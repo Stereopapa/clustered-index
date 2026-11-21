@@ -6,6 +6,7 @@ from typing import List
 import pytest
 
 from core.bplus_tree import BplusTree, BplusTreeConfig
+from core.tree_printer import TreePrinter
 from core.structures.page import Page
 from core.structures.record import Record
 
@@ -24,7 +25,7 @@ def test_update_same_key():
     assert rec.mass == 2.0
     assert rec.velocity == 3.0
 
-    t.display("structure_collapse_rec")
+    TreePrinter(t).display("structure_collapse_rec")
 
 def test_non_equal_r_d_root_capacity_change():
     new_conf = copy.deepcopy(conf)
@@ -33,7 +34,7 @@ def test_non_equal_r_d_root_capacity_change():
     t = BplusTree(conf=new_conf)
     for i in range(1,60):
         t.insert(i, Record.random())
-        t.display("structure_collapse_rec", f"{i}")
+        TreePrinter(t).display("structure_collapse_rec", f"{i}")
         r = t._loader.get_root()
         if r.is_leaf:
             assert r.header.key_count <= new_conf.max_keys_leaf
@@ -46,9 +47,9 @@ def test_update_merge_then_split():
     i: int = 0
     for i in range(16):
         t.insert(i, Record(1.0, 1.0))
-        t.display("structure_collapse_rec", f"{i}")
+        TreePrinter(t).display("structure_collapse_rec", f"{i}")
     t.insert(i+1, Record(1.0, 1.0))
-    t.display("structure_collapse_rec", f"{i}")
+    TreePrinter(t).display("structure_collapse_rec", f"{i}")
 
     # forces delete merge
     t.update(15, 100, Record(5.0, 5.0))
@@ -57,7 +58,7 @@ def test_update_merge_then_split():
         assert t.search(15) is None
     assert t.search(100) is not None
 
-    t.display("structure_collapse_rec")
+    TreePrinter(t).display("structure_collapse_rec")
 
 def test_search_after_rebalance():
     t = BplusTree(conf=conf)
@@ -93,10 +94,10 @@ def test_random_insert_delete():
                 t.delete(key)
                 delete_keys.remove(key)
                 if z % divisor == 0:
-                    t.display("structure_collapse_rec", f"d:{key}")
+                    TreePrinter(t).display("structure_collapse_rec", f"d:{key}")
                 assert_existing_keys_can_be_found(t, delete_keys)
                 z -= 1
-            t.display("structure_collapse_rec", f"d:{key}")
+            TreePrinter(t).display("structure_collapse_rec", f"d:{key}")
     except Exception:
         raise
 
